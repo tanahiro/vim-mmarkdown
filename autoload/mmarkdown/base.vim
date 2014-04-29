@@ -35,6 +35,8 @@ function! mmarkdown#base#to_html(filename) "{{{
   html_filename += File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html"))
 
   md_string = File.open(mmd_filename).read
+  md_string.gsub!(/\[\[(\w[\w -\/]*)\]\]/, '[\1](\1)')
+
   html_string = MMarkdown.new(md_string).to_str
 
   File.open(html_filename, 'w') {|f|
