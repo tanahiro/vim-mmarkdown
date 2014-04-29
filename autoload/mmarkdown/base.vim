@@ -57,8 +57,8 @@ function! mmarkdown#base#follow_wiki_link(split) "{{{
     link = VIM::evaluate('link')
 
     unless link == ""
-      VIM::command("let dir=\"#{File.dirname(link)}\"")
-      VIM::command("let file=\"#{File.basename(link)}.mmd\"")
+      VIM::command("let dir='#{File.dirname(link).gsub(/ /, '\\ ')}'")
+      VIM::command("let file='#{File.basename(link).gsub(/ /, '\\ ')}.mmd'")
     end
 EOF
   if file != ""
