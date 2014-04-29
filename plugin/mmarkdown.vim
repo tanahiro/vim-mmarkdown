@@ -4,6 +4,10 @@
 " WebPage: https://github.com/tanahiro/vim-mmarkdown
 " License: MIT
 
+if !has('ruby')
+  finish
+endif
+
 "" Initialzie {{{
 if !exists('g:mmarkdown_workdir')
   let g:mmarkdown_workdir=$HOME.'/mmarkdown'
@@ -30,8 +34,6 @@ augroup END
 
 " Command {{{
 command! MMarkdownIndex call mmarkdown#base#index()
-
-command! MMarkdownToHTML call mmarkdown#base#to_html(expand("%"))
 " }}}
 
 " Mapping {{{
@@ -39,10 +41,5 @@ if !hasmapto('<Plug>MMarkdownIndex')
   nmap <silent><unique> <Leader>mm <Plug>MMarkdownIndex
 endif
 nnoremap <unique><script> <Plug>MMarkdownIndex :MMarkdownIndex<CR>
-
-if !hasmapto('<Plug>MMarkdownToHTML')
-  nmap <silent><unique> <Leader>mh <Plug>MMarkdownToHTML
-endif
-nnoremap <unique><script> <Plug>MMarkdownToHTML :MMarkdownToHTML<CR>
 " }}}
 
