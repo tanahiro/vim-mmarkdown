@@ -31,13 +31,25 @@ function! mmarkdown#base#to_html(filename) "{{{
   require 'mmarkdown'
 
   mmd_filename  = VIM::Buffer.current.name
-  html_filename = VIM::evaluate("g:mmarkdown_html_dir") + "/"
-  html_filename += File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html"))
+  mmd_dirname   =
+    File.dirname(mmd_filename.gsub(VIM::evaluate("g:mmarkdown_workdir"), ""))
+
+  html_dirname = File.join(VIM::evaluate("g:mmarkdown_html_dir"), mmd_dirname)
+
+  html_filename =
+    File.join(html_dirname,
+              File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html")))
 
   md_string = File.open(mmd_filename).read
-  md_string.gsub!(/\[\[(\w[\w -\/]*)\]\]/, '[\1](\1)')
+  regexp = /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
+  md_string.gsub!(regexp, '[\1](\1.html)')
 
   html_string = MMarkdown.new(md_string).to_str
+
+  unless Dir.exists?(html_dirname)
+    require 'fileutils'
+    FileUtils.mkdir_p(html_dirname)
+  end
 
   File.open(html_filename, 'w') {|f|
     f.write(html_string)
