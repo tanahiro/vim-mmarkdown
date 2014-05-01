@@ -56,9 +56,12 @@ function! mmarkdown#base#follow_wiki_link(split) "{{{
 
     link = VIM::evaluate('link')
 
+    file_name = File.basename(link).gsub(/ /, '\\ ') + '.mmd'
+    dir_name  = File.dirname(link).gsub(/ /, '\\ ')
+
     unless link == ""
-      VIM::command("let dir='#{File.dirname(link).gsub(/ /, '\\ ')}'")
-      VIM::command("let file='#{File.basename(link).gsub(/ /, '\\ ')}.mmd'")
+      VIM::command("let dir='#{dir_name}'")
+      VIM::command("let file='#{file_name}'")
     end
 EOF
   if file != ""
@@ -80,19 +83,19 @@ function! mmarkdown#base#detect_wiki_link() "{{{
 
   ruby << EOF
     row, col = $curwin.cursor
+    col += 1 ## value is different from return value of col('.')
 
     line  = $curbuf.line
-    links = line.scan(/\[\[(\w[\w -\/]*)\]\]/).map {|x| x[0]}
-
-    indices = []
-    links.each {|l|
-      indices << [line.match(l).begin(0), line.match(l).end(0)]
-    }
+    regexp = /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
+    links = []
+    line.scan(regexp) {|match| links << [match[0], $~.begin(0), $~.end(0)] }
 
     link = ""
-    links.zip(indices) { |l, i|
-      if (i[0] - 2<= col) and (col + 2<= i[1]) ## include '[[' and ']]'
-        link = l
+    links.each {|l|
+      link_begin = line[0..l[1]].bytesize
+      link_end   = line[0..l[2]].bytesize - 1
+      if (link_begin <= col) and (col <= link_end)  ## including '[[' and ']]'
+        link = l[0]
         break
       end
     }
