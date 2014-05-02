@@ -15,10 +15,21 @@ syn region mmarkdownBlockEq start="\\\[" end="\\\]"
 
 syn region mmarkdownWikiLink start="\[\[" end="\]\]"
 
+syn match mmarkdownPlaceholder /^\s*%toc\%(\s.*\)\?$/
+      \ contains=VimwikiPlaceholderParam
+syn match mmarkdownPlaceholder /^\s*%title\%(\s.*\)\?$/
+      \ contains=mmarkdownPlaceholderParam
+syn match mmarkdownPlaceholder /^\s*%template\%(\s.*\)\?$/
+      \ contains=mmarkdownPlaceholderParam
+syn match mmarkdownPlaceholderParam /\s.*/ contained
+
 hi def link mmarkdownEq Special
 hi def link mmarkdownBlockEq Special
 
 hi def link mmarkdownWikiLink Underlined
+
+hi def link mmarkdownPlaceholder SpecialKey
+hi def link mmarkdownPlaceholderParam String
 
 let b:current_syntax = "mmarkdown"
 

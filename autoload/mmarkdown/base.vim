@@ -30,6 +30,7 @@ function! mmarkdown#base#to_html(filename) "{{{
   ruby << EOF
   require 'mmarkdown'
 
+  ## File name and dir name
   mmd_filename  = VIM::Buffer.current.name
   mmd_dirname   =
     File.dirname(mmd_filename.gsub(VIM::evaluate("g:mmarkdown_workdir"), ""))
@@ -40,9 +41,23 @@ function! mmarkdown#base#to_html(filename) "{{{
     File.join(html_dirname,
               File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html")))
 
+  ## Parse markdown
   md_string = File.open(mmd_filename).read
-  regexp = /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
-  md_string.gsub!(regexp, '[\1](\1.html)')
+  ## placeholder
+  md_header = {}
+  md_header_regexp =
+    /^\s*%(title|template)\s+([\s[:alpha:][:digit:]#-\/_+]*?)\n/
+  md_string.lines[0..9].each {|line|
+    match = md_header_regexp.match(line)
+    if match
+      md_header[match[1]] = match[2].chomp
+    end
+  }
+  md_string.gsub!(md_header_regexp, '')
+  ## wiki link
+  wiki_link_regexp =
+    /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
+  md_string.gsub!(wiki_link_regexp, '[\1](\1.html)')
 
   html_string = MMarkdown.new(md_string).to_str
 
@@ -52,7 +67,31 @@ function! mmarkdown#base#to_html(filename) "{{{
   end
 
   File.open(html_filename, 'w') {|f|
-    f.write(html_string)
+    if md_header["template"]
+      template_dir = File.join(VIM::evaluate("g:mmarkdown_workdir"), "template")
+
+      if Dir.exists?(template_dir)
+        template_file =
+          File.join(template_dir, md_header["template"] + ".html")
+
+        if File.exists?(template_file)
+          File.open(template_file, 'r') {|tmplt|
+            tmplt_html = tmplt.read
+
+            tmplt_html.gsub!('%title%', md_header["title"])
+            tmplt_html.gsub!('%content%', html_string)
+
+            f.write(tmplt_html)
+          }
+        else
+          VIM::message("couldn't find the template file")
+        end
+      else
+        VIM::message("couldn't find the template directory")
+      end
+    else
+      f.write(html_string)
+    end
   }
 
   #VIM::message("HTML file generated as #{html_filename}")
@@ -98,9 +137,12 @@ function! mmarkdown#base#detect_wiki_link() "{{{
     col += 1 ## value is different from return value of col('.')
 
     line  = $curbuf.line
-    regexp = /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
+    wiki_link_regexp =
+      /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] #-_+\.\/]*)\]\]/
     links = []
-    line.scan(regexp) {|match| links << [match[0], $~.begin(0), $~.end(0)] }
+    line.scan(wiki_link_regexp) {|match|
+      links << [match[0], $~.begin(0), $~.end(0)]
+    }
 
     link = ""
     links.each {|l|
