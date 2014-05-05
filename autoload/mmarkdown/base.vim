@@ -31,18 +31,10 @@ function! mmarkdown#base#to_html(filename) "{{{
   require 'mmarkdown'
 
   ## File name and dir name
-  mmd_filename  = VIM::Buffer.current.name
-  mmd_dirname   =
-    File.dirname(mmd_filename.gsub(VIM::evaluate("g:mmarkdown_workdir"), ""))
-
-  html_dirname = File.join(VIM::evaluate("g:mmarkdown_html_dir"), mmd_dirname)
-
-  html_filename =
-    File.join(html_dirname,
-              File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html")))
+  html_filename = VIM::evaluate("mmarkdown#base#html_file_name()")
 
   ## Parse markdown
-  md_string = File.open(mmd_filename).read
+  md_string = File.open(VIM::Buffer.current.name).read
   ## placeholder
   md_header = {}
   md_header_regexp =
@@ -61,6 +53,7 @@ function! mmarkdown#base#to_html(filename) "{{{
 
   html_string = MMarkdown.new(md_string).to_str
 
+  html_dirname = File.dirname(html_filename)
   unless Dir.exists?(html_dirname)
     require 'fileutils'
     FileUtils.mkdir_p(html_dirname)
@@ -160,3 +153,20 @@ EOF
   return link
 endfunction "}}}
 
+function! mmarkdown#base#html_file_name() "{{{
+  let html_filename = ""
+
+  ruby << EOF
+  mmd_filename  = VIM::Buffer.current.name
+  mmd_dirname   =
+    File.dirname(mmd_filename.gsub(VIM::evaluate("g:mmarkdown_workdir"), ""))
+
+  html_dirname = File.join(VIM::evaluate("g:mmarkdown_html_dir"), mmd_dirname)
+
+  html_filename =
+    File.join(html_dirname,
+              File.basename(mmd_filename.gsub(/\.mmd\Z/, ".html")))
+  VIM::command("let html_filename=\"#{html_filename}\"")
+EOF
+  return html_filename
+endfunction "}}}
