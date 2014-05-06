@@ -40,9 +40,13 @@ function! mmarkdown#base#to_html(filename) "{{{
   md_header_regexp =
     /^\s*%(title|template)\s+([\s[:alpha:][:digit:]#-\/_+]*?)\n/
   md_string.lines[0..9].each {|line|
-    match = md_header_regexp.match(line)
-    if match
+    if match = md_header_regexp.match(line)
       md_header[match[1]] = match[2].chomp
+    end
+
+    if match = /^%toc\s*([1-6]?$)/.match(line)
+      md_header["toc"] = match[1].chomp
+      md_string.gsub!(/^%toc\s*([1-6]?$)/, '')
     end
   }
   md_string.gsub!(md_header_regexp, '')
@@ -51,7 +55,9 @@ function! mmarkdown#base#to_html(filename) "{{{
     /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
   md_string.gsub!(wiki_link_regexp, '[\1](\1.html)')
 
-  html_string = MMarkdown.new(md_string).to_str
+  mmarkdown = MMarkdown.new(md_string)
+
+  html_string = mmarkdown.to_str
 
   html_dirname = File.dirname(html_filename)
   unless Dir.exists?(html_dirname)
@@ -72,6 +78,22 @@ function! mmarkdown#base#to_html(filename) "{{{
             tmplt_html = tmplt.read
 
             tmplt_html.gsub!('%title%', md_header["title"])
+
+            if md_header["toc"]
+              toc_level = md_header["toc"].to_i
+              unless (1 <= toc_level and toc_level <= 6)
+                toc_level = 3
+              end
+
+              html_toc  = "<div class='toc'>\n"
+              html_toc += "<h1>Table of Contents</h1>\n"
+              html_toc += mmarkdown.toc_html(toc_level)
+              html_toc += "</div>"
+              tmplt_html.gsub!('%toc%', html_toc)
+            else
+              tmplt_html.gsub!('%toc%', '')
+            end
+
             tmplt_html.gsub!('%content%', html_string)
 
             f.write(tmplt_html)
