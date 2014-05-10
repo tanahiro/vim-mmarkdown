@@ -192,3 +192,26 @@ function! mmarkdown#base#html_file_name() "{{{
 EOF
   return html_filename
 endfunction "}}}
+
+function! mmarkdown#base#selected_part_to_html() range "{{{
+  let str=""
+  let html=""
+  for linenum in range(a:firstline, a:lastline)
+    let str .= getline(linenum)
+    let str .= "\n"
+  endfor
+
+  ruby << EOF
+  require 'mmarkdown'
+
+  str = VIM::evaluate("str").force_encoding('utf-8')
+  html = MMarkdown.new(str).to_str
+  html.gsub!("\"", "\\\"")
+
+  VIM::command("let html=\"#{html}\"")
+EOF
+  redir @+>
+  silent execute "echo html"
+  redir END
+endfunction "}}}
+
