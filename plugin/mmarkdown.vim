@@ -10,10 +10,14 @@ endif
 
 "" Initialzie {{{
 if !exists('g:mmarkdown_workdir')
-  let g:mmarkdown_workdir=$HOME.'/mmarkdown'
+  let home = substitute($HOME, '\\', '/', 'g')
+  let g:mmarkdown_workdir=home.'/mmarkdown'
+  unlet home
 endif
 if !exists('g:mmarkdown_html_dir')
-  let g:mmarkdown_html_dir=$HOME.'/mmarkdown/html'
+  let home = substitute($HOME, '\\', '/', 'g')
+  let g:mmarkdown_html_dir=home.'/mmarkdown/html'
+  unlet home
 endif
 
 if !isdirectory(g:mmarkdown_workdir)

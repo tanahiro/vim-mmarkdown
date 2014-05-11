@@ -52,7 +52,7 @@ function! mmarkdown#base#to_html(filename) "{{{
   md_string.gsub!(md_header_regexp, '')
   ## wiki link
   wiki_link_regexp =
-    /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] -\.\/]*)\]\]/
+    /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] ,\[\]=_\+-\.\/]*)\]\]/
   md_string.gsub!(wiki_link_regexp, '[\1](\1.html)')
 
   mmarkdown = MMarkdown.new(md_string)
@@ -153,7 +153,7 @@ function! mmarkdown#base#detect_wiki_link() "{{{
 
     line  = $curbuf.line
     wiki_link_regexp =
-      /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] #-_+\.\/]*)\]\]/
+      /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] ,\[\]=_\+-\.\/]*)\]\]/
     links = []
     line.scan(wiki_link_regexp) {|match|
       links << [match[0], $~.begin(0), $~.end(0)]
