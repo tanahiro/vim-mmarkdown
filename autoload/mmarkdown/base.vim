@@ -215,3 +215,16 @@ EOF
   redir END
 endfunction "}}}
 
+function! mmarkdown#base#open_html(filename) "{{{
+  let html_filename = ""
+
+  if a:filename == ""
+    let html_filename = mmarkdown#base#html_file_name()
+  else
+    let html_filename = a:html_filename
+  endif
+
+  silent execute ":!".g:mmarkdown_viewer." ".html_filename
+
+endfunction "}}}
+

@@ -17,6 +17,8 @@ command! -buffer MMarkdownFollowLinkSplit
       \ call mmarkdown#base#follow_wiki_link('split')
 command! -buffer MMarkdownFollowLinkVSplit
       \ call mmarkdown#base#follow_wiki_link('vsplit')
+
+command! -buffer MMarkdownOpenHTML call mmarkdown#base#open_html("")
 " }}}
 
 " Mapping {{{
@@ -48,5 +50,10 @@ endif
 nnoremap <silent><script><buffer>
       \ <Plug>MMarkdownFollowLinkVSplit :MMarkdownFollowLinkVSplit<CR>
 
+if !hasmapto('<Plug>MMarkdownOpenHTML')
+  nmap <silent><buffer> <Leader>mv <Plug>MMarkdownOpenHTML
+endif
+nnoremap <silent><script><buffer>
+      \ <Plug>MMarkdownOpenHTML :MMarkdownOpenHTML<CR>
 " }}}
 
