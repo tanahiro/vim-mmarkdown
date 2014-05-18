@@ -34,7 +34,11 @@ function! mmarkdown#base#to_html(filename) "{{{
   html_filename = VIM::evaluate("mmarkdown#base#html_file_name()")
 
   ## Parse markdown
-  md_string = File.open(VIM::Buffer.current.name).read
+  md_string = ""
+  File.open(VIM::Buffer.current.name) {|buffer|
+    md_string = buffer.read
+  }
+
   ## placeholder
   md_header = {}
   md_header_regexp =
