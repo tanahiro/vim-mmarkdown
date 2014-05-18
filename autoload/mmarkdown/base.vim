@@ -28,6 +28,7 @@ endfunction "}}}
 
 function! mmarkdown#base#to_html(filename) "{{{
   ruby << EOF
+  require 'mmarkdown'
 
   ## File name and dir name
   html_filename = VIM::evaluate("mmarkdown#base#html_file_name()")
@@ -54,31 +55,9 @@ function! mmarkdown#base#to_html(filename) "{{{
     /\[\[([[:alpha:][:digit:]][[:alpha:][:digit:] ,\[\]=_\+-\.\/]*)\]\]/
   md_string.gsub!(wiki_link_regexp, '[\1](\1.html)')
 
-  ## Convert to HTML
-  require 'rbconfig'
-  if RbConfig::CONFIG['host_os'] =~ /mswin|mingw/
-    html_string = %x(mmarkdown --stdout -i "#{md_string}")
-  else
-    require 'mmarkdown'
-    mmarkdown = MMarkdown.new(md_string)
-    html_string = mmarkdown.to_str
-  end
+  mmarkdown = MMarkdown.new(md_string)
 
-  if md_header["toc"]
-    toc_level = md_header["toc"].to_i
-    unless (1 <= toc_level and toc_level <= 6)
-      toc_level = 3
-    end
-
-    html_toc  = "<div class='toc'>\n"
-    html_toc += "<h1>Table of Contents</h1>\n"
-    if RbConfig::CONFIG['host_os'] =~ /mswin|mingw/
-      html_toc += %x(mmarkdown --stdout --toc #{toc_level} -i "#{md_string}")
-    else
-      html_toc += mmarkdown.toc_html(toc_level)
-    end
-    html_toc += "</div>"
-  end
+  html_string = mmarkdown.to_str
 
   html_dirname = File.dirname(html_filename)
   unless Dir.exists?(html_dirname)
@@ -101,6 +80,15 @@ function! mmarkdown#base#to_html(filename) "{{{
             tmplt_html.gsub!('%title%', md_header["title"])
 
             if md_header["toc"]
+              toc_level = md_header["toc"].to_i
+              unless (1 <= toc_level and toc_level <= 6)
+                toc_level = 3
+              end
+
+              html_toc  = "<div class='toc'>\n"
+              html_toc += "<h1>Table of Contents</h1>\n"
+              html_toc += mmarkdown.toc_html(toc_level)
+              html_toc += "</div>"
               tmplt_html.gsub!('%toc%', html_toc)
             else
               tmplt_html.gsub!('%toc%', '')
