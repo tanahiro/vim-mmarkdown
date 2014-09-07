@@ -57,3 +57,27 @@ nnoremap <silent><script><buffer>
       \ <Plug>MMarkdownOpenHTML :MMarkdownOpenHTML<CR>
 " }}}
 
+" Folding {{{
+" http://d.hatena.ne.jp/thinca/20100302/1267462867
+setlocal foldmethod=expr
+setlocal foldexpr=MMarkdownFold()
+
+function! MMarkdownFold() "{{{
+  let head = s:head(v:lnum)
+
+  if head
+    return head
+  elseif v:lnum != line('$') && getline(v:lnum + 1) =~ '^#'
+    return '<' . s:head(v:lnum + 1)
+  endif
+  return '='
+endfunction
+"}}}
+
+function! s:head(lnum) "{{{
+  return strlen(matchstr(getline(a:lnum), '^#*'))
+endfunction
+"}}}
+
+"}}}
+
