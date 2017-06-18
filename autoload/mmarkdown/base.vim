@@ -66,7 +66,12 @@ function! mmarkdown#base#to_html(filename) "{{{
   html_dirname = File.dirname(html_filename)
   unless Dir.exists?(html_dirname)
     require 'fileutils'
-    FileUtils.mkdir_p(html_dirname)
+    begin
+      FileUtils.mkdir_p(html_dirname)
+    rescue
+      mmd_filename  = VIM::Buffer.current.name
+      html_filename = mmd_filename.gsub(/\.(mmd|md)/, ".html")
+    end
   end
 
   File.open(html_filename, 'w') {|f|
